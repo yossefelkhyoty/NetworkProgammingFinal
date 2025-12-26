@@ -1,0 +1,1749 @@
+🧠 Network Exceptions Across OSI Layers
+________________________________________
+1️⃣ Physical & Data Link Layer
+Description:
+These layers handle the physical transmission of data (cables, Wi-Fi, network cards).
+Python doesn’t directly interact with them, but low-level hardware or interface errors appear as OSError.
+Common Exception:
+OSError: [Errno 101] Network is unreachable
+Example:
+import socket
+
+try:
+    # Trying to connect using an invalid or disconnected network interface
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect(("10.255.255.1", 8080))  # Non-routable address
+except OSError as e:
+    print("Physical/Data Link Layer Error:", e)
+Output:
+Physical/Data Link Layer Error: [Errno 101] Network is unreachable
+________________________________________
+2️⃣ Network Layer
+Description:
+Handles logical addressing (IP) and routing.
+DNS resolution and unreachable networks are typical causes of network-layer exceptions.
+Common Exception:
+socket.gaierror (Get Address Info Error)
+Example:
+import socket
+
+try:
+    s = socket.create_connection(("nonexistent-domain.example", 80))
+except socket.gaierror as e:
+    print("Network Layer Error: DNS resolution failed ->", e)
+Output:
+Network Layer Error: DNS resolution failed -> [Errno -2] Name or service not known
+________________________________________
+3️⃣ Transport Layer
+Description:
+Responsible for reliable data transfer (TCP/UDP).
+Errors occur when connections time out, are refused, or are reset.
+Common Exceptions:
+socket.timeout
+ConnectionRefusedError
+ConnectionResetError
+BrokenPipeError
+Example:
+import socket
+
+try:
+    s = socket.create_connection(("example.com", 81), timeout=3)
+except socket.timeout:
+    print("Transport Layer Error: Connection timed out.")
+except ConnectionRefusedError:
+    print("Transport Layer Error: Connection refused by server.")
+except ConnectionResetError:
+    print("Transport Layer Error: Connection reset by peer.")
+Output (example):
+Transport Layer Error: Connection refused by server.
+________________________________________
+4️⃣ Session Layer
+Description:
+Manages sessions between hosts (establishing, maintaining, terminating).
+Errors appear when the session is dropped, aborted, or times out.
+Common Exceptions:
+ConnectionResetError
+ConnectionAbortedError
+TimeoutError
+Example:
+import socket
+
+try:
+    s = socket.create_connection(("example.com", 80))
+    s.sendall(b"GET / HTTP/1.1\r\nHost: example.com\r\n\r\n")
+    # Force close to simulate a dropped session
+    s.close()
+    s.sendall(b"More data")  # Send after closing
+except BrokenPipeError:
+    print("Session Layer Error: Broken pipe (session closed).")
+except ConnectionResetError:
+    print("Session Layer Error: Connection reset during session.")
+Output:
+Session Layer Error: Broken pipe (session closed).
+________________________________________
+5️⃣ Presentation Layer
+Description:
+Handles data encoding, compression, and encryption (SSL/TLS).
+Python throws errors when SSL certificates fail or when data encoding fails.
+Common Exceptions:
+ssl.SSLError
+UnicodeDecodeError
+Example 1 – SSL Error:
+import ssl, socket
+
+context = ssl.create_default_context()
+try:
+    with socket.create_connection(("expired.badssl.com", 443)) as sock:
+        with context.wrap_socket(sock, server_hostname="expired.badssl.com") as ssock:
+            print(ssock.version())
+except ssl.SSLError as e:
+    print("Presentation Layer Error (SSL):", e)
+Output:
+Presentation Layer Error (SSL): [SSL: CERTIFICATE_VERIFY_FAILED] certificate has expired
+Example 2 – Encoding Error:
+try:
+    data = b'\xff\xfe\xfd'.decode('utf-8')
+except UnicodeDecodeError as e:
+    print("Presentation Layer Error (Encoding):", e)
+Output:
+Presentation Layer Error (Encoding): 'utf-8' codec can't decode byte 0xff
+________________________________________
+6️⃣ Application Layer
+Description:
+The layer where applications communicate (HTTP, FTP, SMTP, etc.).
+Most errors here occur during API calls, HTTP requests, or data parsing.
+Common Exceptions:
+requests.exceptions.ConnectionError
+requests.exceptions.Timeout
+json.JSONDecodeError
+urllib.error.URLError
+Example:
+import requests, json
+
+try:
+    response = requests.get("https://invalidurl.example", timeout=3)
+    data = response.json()
+except requests.exceptions.ConnectionError:
+    print("Application Layer Error: Unable to connect to server.")
+except requests.exceptions.Timeout:
+    print("Application Layer Error: Server did not respond in time.")
+except json.JSONDecodeError:
+    print("Application Layer Error: Invalid JSON received.")
+Output:
+Application Layer Error: Unable to connect to server.
+________________________________________
+🧾 Summary Table
+OSI Layer	Typical Python Exception	Description / Cause
+Physical & Data Link	OSError	Network interface or hardware issue
+Network	socket.gaierror	DNS resolution or unreachable network
+Transport	socket.timeout, ConnectionRefusedError, BrokenPipeError	Connection, timeout, or send/receive failure
+Session	ConnectionResetError, ConnectionAbortedError	Session interrupted or closed
+Presentation	ssl.SSLError, UnicodeDecodeError	Encryption or data encoding error
+Application	requests.exceptions.*, JSONDecodeError, URLError	Application protocol or parsing failure
+________________________________________
+
+
+
+HTTP (Network Programming with
+Python) — Assessment Set
+Format: 50 Multiple-Choice Questions (MCQs) + 1 Matching Question (10 pairs)
+Language: Formal academic English
+Coverage: Protocol layering; HTTP/1.1 request/response grammar; methods and
+status codes; URLs; statelessness and cookies; persistent connections; sockets
+(client/server) in Python; concurrency; logging and error handling; HTTP vs. HTTPS.
+Multiple-Choice Questions (Select one best
+answer)
+Which statement best captures why layering is used in network
+architectures?
+A. To ensure every layer uses the same protocol
+B. To enable interoperability and abstraction across heterogeneous systems
+C. To maximize physical-layer throughput
+D. To eliminate the need for error handling
+Correct answer: B
+In the deployed Internet architecture, HTTP resides primarily at which
+layer?
+A. Transport
+B. Internet
+C. Application
+D. Link
+Correct answer: C
+HTTPtypically runs over which transport protocol and default port?
+A. UDP, port 53
+B. TCP, port 80
+C. TCP, port 25
+D. UDP, port 443
+Correct answer: B
+Which statement about HTTP’s client–server model is accurate?
+A. Servers initiate all connections
+B. Clients respond with status codes
+C. Clients send requests; servers return status, headers, and an optional body
+D. Both peers behave symmetrically
+Correct answer: C
+Which property characterizes HTTP by design?
+A. Connection-oriented statefulness
+B. Statelessness at the application layer
+C. Reliable message ordering by the application
+D. Broadcast semantics
+Correct answer: B
+The first line of an HTTP/1.1 request is called the:
+A. Status line
+B. Request line
+C. Header line
+D. Start line (response)
+Correct answer: B
+Which is a valid HTTP/1.1 request line?
+A. HTTP/1.1 200 OK
+B. GET /index.html HTTP/1.1
+C. Status: 200 OK
+D. POST HTTP/1.1 /submit
+Correct answer: B
+Which method is defined in HTTP/1.0 and remains in HTTP/1.1?
+A. OPTIONS
+B. TRACE
+C. HEAD
+D. CONNECT
+Correct answer: C
+Which property is correct about HTTP methods?
+A. All methods are safe
+B. GET is safe and idempotent
+C. POSTis idempotent
+D. DELETE is non-idempotent by definition
+Correct answer: B
+Which header most directly conveys session state to the client?
+A. ETag
+B. Set-Cookie
+C. Content-Type
+D. Cache-Control: no-store
+Correct answer: B
+Which 2xx status code indicates that a new resource was successfully
+created?
+A. 200
+B. 201
+C. 202
+D. 204
+Correct answer: B
+A301 response means:
+A. Temporary redirection
+B. Permanent redirection
+C. Client error due to authentication failure
+D. Server is unavailable
+Correct answer: B
+Which status code most appropriately signals ‘Not Modified’ for caching?
+A. 304
+B. 204
+C. 206
+D. 412
+Correct answer: A
+A401 response specifically denotes:
+A. Forbidden
+B. Not Found
+C. Unauthorized (authentication required)
+D. Proxy Authentication Required
+Correct answer: C
+A503 response most likely indicates:
+A. Resource permanently removed
+B. Service unavailable (often transient)
+C. Bad gateway at client
+D. Request timeout due to client error
+Correct answer: B
+Which best describes the URL component order?
+A. scheme://host:port/path?query#fragment
+B. scheme://path/host:port?query#fragment
+C. host://scheme:port/path#fragment?query
+D. scheme://host/path:port?fragment#query
+Correct answer: A
+Whydowebpages often incur multiple round-trip times (RTTs)?
+A. Because TCP cannot multiplex streams
+B. Because a page typically references multiple objects (CSS/JS/images)
+C. Because HTTP requires per-header acknowledgments
+D. Because DNS is part of HTTP
+Correct answer: B
+Persistent connections primarily improve performance by:
+A. Encrypting headers
+B. Reusing the same TCP connection for multiple requests
+C. Caching all responses on the client
+D. Disabling cookies
+Correct answer: B
+Which header historically controlled persistent connections prior to
+HTTP/1.1 defaults?
+A. Connection: keep-alive
+B. Keep-Alive: on
+C. Cache-Control: persistent
+D. Transfer-Encoding: chunked
+Correct answer: A
+HTTPis plaintext, whereas HTTPS adds which security protocol?
+A. IPSec
+B. SSH
+C. TLS
+D. SRTP
+Correct answer: C
+Which is not a standard HTTP/1.1 method?
+A. GET
+B. PUT
+C. PATCH(RFC 5789)
+D. PUBLISH
+Correct answer: D
+Which header is most relevant when sending a JSON request body?
+A. Content-Encoding: gzip
+B. Content-Type: application/json
+C. Accept-Language: en
+D. ETag: "abc"
+Correct answer: B
+Which status class represents client errors?
+A. 1xx
+B. 2xx
+C. 3xx
+D. 4xx
+Correct answer: D
+Which response header instructs the browser to return cookies on
+subsequent requests?
+A. Cookie
+B. Set-Cookie
+C. Authorization
+D. WWW-Authenticate
+Correct answer: A (the client sends Cookie; the server sets with Set-Cookie)
+HTTP/1.1 requires which header in requests to origin servers?
+A. Host
+B. Server
+C. Date
+D. Via
+Correct answer: A
+Which Python socket call establishes a TCP connection from a client?
+A. bind()
+B. listen()
+C. connect()
+D. accept()
+Correct answer: C
+Which sequence correctly represents a minimal Python HTTP client
+workflow?
+A. socket() → bind() → listen() → accept()
+B. socket() → connect() → send()/recv() → close()
+C. socket() → accept() → send()
+D. bind() → connect() → send()
+Correct answer: B
+Onthe server side, which call waits for an incoming connection?
+A. connect()
+B. listen()
+C. accept()
+D. recv()
+Correct answer: C
+Aminimal iterative server loop most closely follows:
+A. accept() → close()
+B. accept() → read request → write response → close
+C. connect() → send() → close()
+D. bind() → connect() → accept()
+Correct answer: B
+Concurrency in a Python HTTP server is commonly achieved by:
+A. fork() only
+B. Threads or an event loop (e.g., selectors/asyncio)
+C. DNS load-balancing only
+D. Using UDP instead of TCP
+Correct answer: B
+Which header is best used to advertise the format of the response body?
+A. Accept
+B. Content-Type
+C. Content-Length
+D. Allow
+Correct answer: B
+Which status code best indicates partial content delivery (e.g., range
+requests)?
+A. 200
+B. 202
+C. 206
+D. 416
+Correct answer: C
+Statelessness in HTTP implies that:
+A. The server never stores any data
+B. Each request is self-contained; the protocol does not retain per-client
+session state
+C. Cookies are required for every request
+D. TCPis stateless
+Correct answer: B
+Which header field is commonly used to control caching behavior?
+A. Cache-Control
+B. Connection
+C. Upgrade-Insecure-Requests
+D. Server
+Correct answer: A
+In Python, which method sends bytes on a TCP socket?
+A. write_text()
+B. send()
+C. dispatch()
+D. emit()
+Correct answer: B
+What is the role of bind() in a Python TCP server?
+A. Associates the socket with a local address/port
+B. Initiates a connection to a remote host
+C. Sends data on an established connection
+D. Receives data on an established connection
+Correct answer: A
+listen() in a TCP server:
+A. Places the socket in a passive state to queue incoming connections
+B. Reads the next HTTP request line
+C. Sends the status line to the client
+D. Resolves DNS queries
+Correct answer: A
+accept() returns:
+A. Aboolean indicating whether a client is authorized
+B. Afile descriptor for logging only
+C. Anewsocket object for the connection and the client address
+D. The HTTP method string
+Correct answer: C
+Which logging practice is most appropriate for HTTP servers?
+A. Log only fatal exceptions
+B. Record request line, status code, bytes sent, and timing in structured logs
+C. Disable logs in production
+D. Log request bodies only
+Correct answer: B
+Which status code most appropriately maps to a malformed request line?
+A. 400
+B. 401
+C. 403
+D. 500
+Correct answer: A
+Which is the most accurate statement about HTTPS?
+A. It changes HTTP semantics and methods
+B. It encapsulates HTTP in TLS to provide confidentiality, integrity, and
+server authentication
+C. It requires UDP for performance
+D. It eliminates the need for cookies
+Correct answer: B
+Which method is commonly used to upload or replace a resource at a
+known URI?
+A. GET
+B. PUT
+C. HEAD
+D. TRACE
+Correct answer: B
+Which method retrieves only header metadata without a response body?
+A. HEAD
+B. OPTIONS
+C. GET
+D. CONNECT
+Correct answer: A
+Which header line properly declares the HTTP version in a response?
+A. HTTP/1.1 200 OK
+B. Status: 200 OK
+C. Version: HTTP/1.1
+D. Response-Line: 200 OK
+Correct answer: A
+Which Python snippet best represents sending an HTTP GET using a raw
+socket?
+A. s.send(b"200 OK\r\n\r\n")
+B. s.send(b"GET / HTTP/1.1\r\nHost: example.com\r\n\r\n")
+C. s.connect(("udp", 80))
+D. s.listen(80)
+Correct answer: B
+Acorrect minimal HTTP response from a Python server must include at
+least:
+A. Status line and Content-Type
+B. Status line and Host
+C. Server header and body
+D. Status line and Date
+Correct answer: A (the minimal practical set is status line + headers
+conveying body type/length; in practice include Content-Length or use
+chunked transfer)
+Which header typically communicates response size when not using
+chunked transfer?
+A. Content-Encoding
+B. Content-Length
+C. Accept-Ranges
+D. Age
+Correct answer: B
+Which response best indicates that the server understands the request
+method but refuses to authorize it?
+A. 401
+B. 403
+C. 405
+D. 415
+Correct answer: B
+Which error handling choice is most appropriate for an unknown method
+at a valid endpoint?
+A. 404 Not Found
+B. 405 Method Not Allowed (+ Allow)
+C. 501 Not Implemented but valid for resource
+D. 500 Internal Server Error
+Correct answer: B
+Which of the following is true about cookies?
+A. They are transported only in response bodies
+B. They replace the need for TLS
+C. They help implement sessions over a stateless protocol by storing
+identifiers client-side
+D. They are required for HTTP/1.1 compliance
+Correct answer: C
+Matching Question (10 pairs)
+Instructions: Match each concept in Column A with the most appropriate
+description in Column B.
+Column A
+1. Request line
+2. Status line
+3. 201Created
+4. 301MovedPermanently
+5. 304Not Modified
+6. Set-Cookie
+7. Persistent connection
+8. accept() (server)
+9. connect() (client)
+10. HTTPS
+Column B
+A. Reuse of a single TCP connection for multiple requests/responses
+B. Server’s instruction to store session state client-side
+C. Response start line containing version, code, and reason phrase
+D. Client call to establish a TCP session to a remote host
+E. Indicates resource successfully created at a new or specified URI
+F. Redirect indicating permanent relocation of a resource
+G. Response advising client cache to reuse stored representation
+H. Application of TLS to HTTP for confidentiality and integrity
+I. Server call returning a new connected socket and peer address
+J. Request start line containing method, target URI, and version
+Answer key (A→B):
+1–J, 2–C, 3–E, 4–F, 5–G, 6–B, 7–A, 8–I, 9–D, 10–H
+
+A) MCQs—PythonSocketProgramming
+(TCP/UDP&Exceptions) (6marks;1foreach)
+Q1. In Python, which class do you instantiate to create a TCP/UDP socket?
+A) socketserver.BaseServer B) socket.socket C) selectors.DefaultSelector D) asyncio.Transport
+Q2. Calling s.connect(('127.0.0.1', 9999)) with no server listening will most likely raise:
+A) TimeoutError B) ConnectionRefusedError C) ConnectionResetError D) socket.herror
+Q3. After s.settimeout(2.0), a blocking recv() that exceeds 2 seconds raises:
+A) socket.timeout B) TimeoutError C) BlockingIOError D) socket.gaierror
+Q4. socket.getaddrinfo('no.such.domain', 80) typically raises:
+A) ConnectionError B) socket.herror C) socket.gaierror D) OSError with EADDRINUSE
+Q5. On a non-blocking socket, a recv() that would block raises:
+A) BlockingIOError B) BrokenPipeError C) ConnectionAbortedError D) PermissionError
+Q6. Sending a large UDP datagram beyond MTU without fragmentation can raise (OS
+dependent):
+A) socket.timeout B) socket.gaierror C) OSError with EMSGSIZE (“Message too long”) D)
+ConnectionRefusedError
+MCQAnswerKey(horizontal)
+Q1
+Q2
+Q3
+Q4
+Q5
+B
+B
+A
+C
+A
+C
+Q6
+1
+Student'sName:…………………………….… ID:………………………….……….….…….…. Page2of2
+B)Match—PythonNetworkingExceptions
+(Twocolumnsinonetable)
+MatcheachTerm(1–8)withthecorrectDefinition(A–H).
+# Term Letter Definition
+1socket.timeout D RaisedonwritetoaclosedTCPsocket/pipe(e.g.,
+SIGPIPEonUnix);typicalforhalf-closedpeers.
+2socket.gaierror G Legacyhost-relatedfailuresfromgethostbyname/
+gethostbyaddrfamily.
+3socket.herror A Raisedwhennameresolution(DNS)fails,e.g.,
+getaddrinfo()cannotresolveahostname.
+4ConnectionRefusedErrorF
+Baseclassforconnection-relatedexceptions;
+superclassofConnectionRefusedError,
+ConnectionResetError,etc.
+5ConnectionResetError H Raisedwhenactivelyconnectingtoaportwithno
+listener(ECONNREFUSED).
+6BrokenPipeError E Raisedfornon-blockingoperationsthatwouldblock
+(EAGAIN/EWOULDBLOCK).
+7BlockingIOError C RaisedwhenthepeerresetstheTCPconnection
+(RST),oftenduringrecv()/send().
+8ConnectionError B Raisedwhenasocketwithadeadline(settimeout)
+exceedsitstimeoutduringblockingI/O.
+MatchAnswerKey(horizontal)
+1 2 3 4 5 6 7 8
+B A G H C D E F
+Withmybestwishe
+
+✅ 40 MCQs on FTP, FTPS, and Python ftplib (With Correct Answers)
+________________________________________
+1. What does FTP stand for?
+A. File Transfer Protocol
+B. File Transmission Program
+C. Fast Transfer Protocol
+D. File Transaction Process
+Answer: A
+________________________________________
+2. Which TCP port is used for the FTP control channel?
+A. 22
+B. 21
+C. 25
+D. 110
+Answer: B
+________________________________________
+3. Which port is used by FTP for data transfer in Active Mode?
+A. 21
+B. 20
+C. 22
+D. 443
+Answer: B
+________________________________________
+4. FTP is considered a ______ protocol.
+A. Stateless
+B. Stateful
+C. UDP-only
+D. One-way
+Answer: B
+________________________________________
+5. Which mode requires the server to initiate the data connection?
+A. Passive Mode
+B. Active Mode
+C. Secure Mode
+D. Tunnel Mode
+Answer: B
+________________________________________
+6. Which protocol encrypts FTP commands and data using SSL/TLS?
+A. SFTP
+B. FTPS
+C. TFTP
+D. SCP
+Answer: B
+________________________________________
+7. FTPS typically uses which secure port?
+A. 22
+B. 465
+C. 990
+D. 587
+Answer: C
+________________________________________
+8. Which Python module provides built-in FTP functionality?
+A. imaplib
+B. ftplib
+C. smtplib
+D. urllib
+Answer: B
+________________________________________
+9. Which Python class is used to establish an FTPS connection?
+A. ftplib.FTP
+B. ftplib.FTP_TLS
+C. ftplib.FTP_SSL
+D. ssl.FTPSocket
+Answer: B
+________________________________________
+10. What does the Python method storbinary() do?
+A. Downloads a file
+B. Uploads a binary file
+C. Deletes a file
+D. Changes directory
+Answer: B
+________________________________________
+11. Which Python method retrieves a binary file from the FTP server?
+A. retrbinary()
+B. download()
+C. getfile()
+D. retrbin()
+Answer: A
+________________________________________
+12. What exception indicates a failed FTP temporary error in Python?
+A. ftplib.error_perm
+B. ftplib.error_temp
+C. ftplib.error_reply
+D. OSError
+Answer: B
+________________________________________
+13. A permanent FTP error in Python triggers which exception?
+A. error_temp
+B. error_perm
+C. error_proto
+D. ValueError
+Answer: B
+________________________________________
+14. Which method closes the FTP connection gracefully?
+A. quit()
+B. close()
+C. exit()
+D. stop()
+Answer: A
+________________________________________
+15. What does the FTP command LIST do?
+A. Uploads files
+B. Lists directory contents
+C. Deletes a file
+D. Displays users
+Answer: B
+________________________________________
+16. Which response code indicates command success in FTP?
+A. 1xx
+B. 2xx
+C. 3xx
+D. 4xx
+Answer: B
+________________________________________
+17. What does FTP response code 530 mean?
+A. File unavailable
+B. Login incorrect
+C. Transfer complete
+D. Syntax error
+Answer: B
+________________________________________
+18. FTP response code 150 indicates:
+A. Opening data connection
+B. Permanent failure
+C. Syntax error
+D. Service unavailable
+Answer: A
+________________________________________
+19. Which Python method enables explicit FTPS (AUTH TLS)?
+A. ftp.start_ssl()
+B. ftp.auth_tls()
+C. ftp.enable_tls()
+D. ftp.secure()
+Answer: B
+________________________________________
+20. In Python ftplib, which method switches to Passive Mode?
+A. passive()
+B. setpassive()
+C. set_pasv(True)
+D. enable_pasv()
+Answer: C
+________________________________________
+21. An advantage of Passive Mode FTP is:
+A. Faster transfer
+B. Works behind NAT and firewalls
+C. Uses fewer ports
+D. Automatically encrypted
+Answer: B
+________________________________________
+22. Which type of encryption does FTPS use?
+A. SSH
+B. TLS/SSL
+C. IPsec
+D. GPG
+Answer: B
+________________________________________
+23. Which of the following is NOT a benefit of FTP?
+A. High-speed file transfer
+B. Reliability
+C. Built-in encryption
+D. Support for large files
+Answer: C
+________________________________________
+24. Which of the following is a disadvantage of FTPS?
+A. Slow transfer
+B. Complex firewall configuration
+C. Lack of authentication
+D. Requires UDP
+Answer: B
+________________________________________
+25. Python's ftplib allows anonymous login using:
+A. ftp.login("public")
+B. ftp.login("anonymous")
+C. ftp.anon()
+D. ftp.anonymous_login()
+Answer: B
+________________________________________
+26. Which command uploads a file in ASCII mode?
+A. STOR
+B. STORASCII
+C. STOR A
+D. STOR TEXT
+Answer: A (ASCII/Binary is controlled by Python method)
+________________________________________
+27. The FTP command RETR is used for:
+A. Uploading
+B. Downloading
+C. Deleting
+D. Renaming
+Answer: B
+________________________________________
+28. Which Python exception indicates a protocol error?
+A. ftplib.error_temp
+B. ftplib.error_perm
+C. ftplib.error_proto
+D. ConnectionRefusedError
+Answer: C
+________________________________________
+29. Which method is used to list files line-by-line in Python?
+A. list()
+B. retrlines("LIST")
+C. dir()
+D. ls()
+Answer: B
+________________________________________
+30. FTPS Explicit Mode uses which port initially?
+A. 990
+B. 443
+C. 21
+D. 587
+Answer: C
+________________________________________
+31. FTPS Implicit Mode requires connection on which port?
+A. 21
+B. 990
+C. 80
+D. 22
+Answer: B
+________________________________________
+32. Which command in FTP renames a file?
+A. RENAME
+B. RMDIR
+C. RNFR / RNTO
+D. CHNAME
+Answer: C
+________________________________________
+33. Which Python ftplib method deletes a file?
+A. ftp.delete()
+B. ftp.remove()
+C. ftp.erase()
+D. ftp.del()
+Answer: A
+________________________________________
+34. What does the command PWD do?
+A. Prints working directory
+B. Changes password
+C. Downloads a file
+D. Opens data connection
+Answer: A
+________________________________________
+35. Which Python module is required to wrap FTP sockets for FTPS?
+A. ssl
+B. crypto
+C. secure
+D. secmod
+Answer: A
+________________________________________
+36. Which FTPS mode encrypts both control and data channels?
+A. Partial SSL
+B. Full SSL
+C. Hybrid Mode
+D. Data-only Mode
+Answer: B
+________________________________________
+37. Which response code indicates a temporary error?
+A. 2xx
+B. 3xx
+C. 4xx
+D. 5xx
+Answer: C
+________________________________________
+38. Which response code indicates a permanent error?
+A. 2xx
+B. 3xx
+C. 4xx
+D. 5xx
+Answer: D
+________________________________________
+39. A common FTPS issue is:
+A. Incompatible SSL certificates
+B. Missing POP3 credentials
+C. HTTP conflict
+D. SMTP timeout
+Answer: A
+________________________________________
+40. What is the primary use of FTP and FTPS?
+A. Email routing
+B. Web browsing
+C. Secure and non-secure file transfer
+D. Remote command execution
+Answer: C
+________________________________________
+
+
+Python Socket Programming – Exceptions Quiz
+(with Answers)
+1. When using Python sockets, which exception is raised if a connection attempt is
+refused by the target host?
+• socket.error
+• ConnectionRefusedError  (Correct Answer)
+• TimeoutError
+2. What will happen if an exception is not caught inside an async function used in
+asyncio networking?
+• The event loop stops immediately
+• The task is cancelled and an error is logged 
+• The exception is silently ignored
+ (Correct Answer)
+3. Which exception indicates that a socket was forcibly closed by the remote host?
+• BrokenPipeError
+• ConnectionAbortedError  (Correct Answer)
+• socket.timeout
+4. What is the most appropriate block to release a socket resource even if an
+exception occurs?
+• try / except
+• try / finally 
+• try / else
+ (Correct Answer)
+5. Which built-in Python exception is raised when reading from a closed socket?
+• ConnectionResetError
+• OSError: [Errno 9] Bad file descriptor 
+• socket.timeout
+ (Correct Answer)
+6. In socket.connect(), if the host is unreachable, Python raises:
+• ConnectionRefusedError
+• OSError: [Errno 113] No route to host 
+• ConnectionResetError
+ (Correct Answer)
+7. Which statement correctly handles both connection and timeout errors in one
+block?
+• except (ConnectionError, TimeoutError):  (Correct Answer)
+• except socket:
+• except socket.error or TimeoutError:
+8. When using socket.settimeout(5), a read operation exceeding this time raises:
+• OSError
+• socket.timeout 
+ (Correct Answer)
+• ConnectionResetError
+9. Which Python module defines the base class for many network-related
+exceptions?
+• sys
+• socket 
+• asyncio
+ (Correct Answer)
+10. What happens if an exception occurs inside an async with block managing a
+network stream?
+• The connection remains open
+• The context manager ensures closure  (Correct Answer)
+• The program crashes
+11. In Python 3, which class hierarchy includes most connection-related
+exceptions?
+• IOError → OSError → ConnectionError  (Correct Answer)
+• Exception → RuntimeError → socket.error
+• SystemError → ConnectionError
+12. To ensure the socket is closed safely after use, which structure is best
+practice?
+• with socket.socket(...) as s: 
+• try: ... except: ...
+• close() before return
+ (Correct Answer)
+13. When using multithreaded sockets, how should exceptions be handled?
+• Use one global try/except in main thread
+• Wrap each thread’s connection logic in its own try/except 
+• Ignore exceptions and continue
+ (Correct Answer)
+14. If the client disconnects unexpectedly, what exception might the server raise
+while sending data?
+• BrokenPipeError  (Correct Answer)
+• socket.timeout
+• TimeoutError
+15. When an invalid IP address is passed to socket.connect(), which error is
+raised?
+• ConnectionRefusedError
+• socket.gaierror 
+• ValueError
+ (Correct Answer)
+16. What is the effect of `raise` with no arguments inside an `except` block?
+• Raises a new custom exception
+• Re-raises the last caught exception 
+• Does nothing
+ (Correct Answer)
+17. How to catch all possible network exceptions safely?
+• except Exception: 
+• except socket.error:
+ (Correct Answer)
+• except BaseException:
+18. What exception is raised when binding a socket to an already-used port?
+• OSError: [Errno 98] Address already in use 
+• socket.timeout
+• ConnectionAbortedError
+ (Correct Answer)
+19. When recv() returns an empty bytes object (b''), it means:
+• Timeout occurred
+• Connection was closed by the peer  (Correct Answer)
+• Packet lost
+20. In asynchronous networking, how should exceptions be propagated from
+coroutines?
+• Return error strings
+• Use raise inside async function 
+• Ignore exceptions
+ (Correct Answer)
+21. Which exception type indicates DNS resolution failed?
+• ConnectionRefusedError
+• socket.gaierror 
+• socket.timeout
+ (Correct Answer)
+22. What does this code do if an exception occurs? try { s.connect(addr) } catch (e)
+{ raise RuntimeError('Network failed') from e }
+• Suppresses the original error
+• Chains the original exception 
+• Ignores traceback
+ (Correct Answer)
+23. Why is `finally` important in socket programming?
+• It only runs if there’s no exception
+• It ensures resource cleanup always  (Correct Answer)
+• It hides all exceptions
+24. When handling asyncio exceptions, which method cancels a failing task?
+• task.abort()
+• task.cancel() 
+• task.close()
+ (Correct Answer)
+25. Is this timeout handler correct? try: data = s.recv(1024) except socket.timeout:
+print('Timeout occurred')
+• Correct 
+ (Correct Answer)
+• Incorrect – must use TimeoutError
+• Incorrect – must close socket first
+26. What exception occurs if you try to send data over a socket that is not
+connected?
+• socket.error: [Errno 107] Transport endpoint is not connected 
+• BrokenPipeError
+• TimeoutError
+ (Correct Answer)
+27. Which keyword allows you to execute code only if NO exception was raised in
+try?
+• else 
+• finally
+• raise
+ (Correct Answer)
+28. What happens if you `except socket.error as e:` but the actual exception is
+TimeoutError?
+• It will still catch it (TimeoutError is a subclass of OSError/IOError from socket ops) 
+(Correct Answer)
+• It won’t catch it
+• It raises a new exception automatically
+29. Which exception is raised when the server forcibly closes a TCP connection?
+• ConnectionResetError  (Correct Answer)
+• socket.timeout
+• BrokenPipeError
+30. Does this code guarantee graceful socket closure even if an exception
+happens? try: s = socket.socket(); s.connect(addr); s.send(b'Hello') finally:
+s.close()
+• Yes, correct 
+ (Correct Answer)
+• No, should use except
+• No, should not close in finally
+
+
+Below are 40 high-quality, formal, precise MCQs in English, each followed by the correct answer and double-checked for accuracy and clarity.
+The questions cover: SMTP, POP3, IMAP, HTTP, FTP, Python 3 usage, exceptions, server responses, advantages, disadvantages.
+________________________________________
+📘 40 MCQs on SMTP, POP3, IMAP, HTTP, FTP, Python 3, Exceptions, and Server Responses
+________________________________________
+1. Which protocol is primarily used for sending email messages from a client to a mail server?
+A. POP3
+B. IMAP
+C. SMTP
+D. FTP
+Answer: C
+________________________________________
+2. Which port is the default port for SMTP without encryption?
+A. 80
+B. 25
+C. 110
+D. 143
+Answer: B
+________________________________________
+3. POP3 operates mainly on which port by default?
+A. 995
+B. 110
+C. 143
+D. 587
+Answer: B
+________________________________________
+4. IMAP commonly uses which default port for unencrypted communication?
+A. 25
+B. 110
+C. 143
+D. 443
+Answer: C
+________________________________________
+5. Which protocol allows email clients to keep messages synchronized across multiple devices?
+A. POP3
+B. SMTP
+C. FTP
+D. IMAP
+Answer: D
+________________________________________
+6. Which protocol removes messages from the server by default after downloading?
+A. IMAP
+B. POP3
+C. SMTP
+D. HTTP
+Answer: B
+________________________________________
+7. Which protocol is used only for message submission and not retrieval?
+A. IMAP
+B. POP3
+C. SMTP
+D. FTP
+Answer: C
+________________________________________
+8. Which Python module is used for sending emails using SMTP?
+A. imaplib
+B. poplib
+C. smtplib
+D. httplib
+Answer: C
+________________________________________
+9. Which Python module is commonly used to retrieve email messages using POP3?
+A. poplib
+B. smtplib
+C. ftplib
+D. imaplib
+Answer: A
+________________________________________
+10. Which Python module is used for interacting with IMAP servers?
+A. smtplib
+B. imaplib
+C. socket
+D. ftplib
+Answer: B
+________________________________________
+11. Which protocol is stateless by design?
+A. SMTP
+B. POP3
+C. IMAP
+D. HTTP
+Answer: D
+________________________________________
+12. Which protocol uses separate control and data channels?
+A. SMTP
+B. POP3
+C. HTTP
+D. FTP
+Answer: D
+________________________________________
+13. Which protocol typically responds with codes such as 220, 250, and 354?
+A. IMAP
+B. POP3
+C. SMTP
+D. FTP
+Answer: C
+________________________________________
+14. FTP servers commonly return a success response starting with which digit?
+A. 1
+B. 2
+C. 3
+D. 4
+Answer: B
+________________________________________
+15. HTTP 404 response code means:
+A. OK
+B. Bad Request
+C. Not Found
+D. Forbidden
+Answer: C
+________________________________________
+16. Which protocol supports folder-level email management on the server?
+A. POP3
+B. SMTP
+C. IMAP
+D. FTP
+Answer: C
+________________________________________
+17. Which protocol is generally more bandwidth efficient for mobile devices?
+A. POP3
+B. IMAP
+C. SMTP
+D. FTP
+Answer: A
+________________________________________
+18. POP3 servers typically respond with a positive status using which prefix?
+A. OK
+B. +OK
+C. 200
+D. SUCCESS
+Answer: B
+________________________________________
+19. SMTP error code 550 indicates:
+A. Message accepted
+B. Mailbox unavailable
+C. Syntax error
+D. Server ready
+Answer: B
+________________________________________
+20. In Python, which exception is commonly raised when SMTP authentication fails?
+A. smtplib.SMTPServerDisconnected
+B. smtplib.SMTPAuthenticationError
+C. smtplib.SMTPRecipientsRefused
+D. socket.timeout
+Answer: B
+________________________________________
+21. In IMAP, which command retrieves message headers?
+A. LIST
+B. SELECT
+C. FETCH
+D. RETR
+Answer: C
+________________________________________
+22. Which protocol encrypts communication using SSL/TLS on port 993 by default?
+A. SMTP
+B. POP3
+C. IMAP
+D. FTP
+Answer: C
+________________________________________
+23. Python’s poplib throws which exception for protocol errors?
+A. POP3Error
+B. POPError
+C. poplib.error_proto
+D. poplib.Exception
+Answer: C
+________________________________________
+24. Which protocol supports partial message download?
+A. POP3
+B. SMTP
+C. IMAP
+D. FTP
+Answer: C
+________________________________________
+25. A drawback of POP3 is:
+A. Requires constant internet connection
+B. Cannot synchronize state across multiple devices
+C. Does not allow message retrieval
+D. Requires high bandwidth
+Answer: B
+________________________________________
+26. A disadvantage of IMAP is:
+A. No folder support
+B. Higher server resource usage
+C. Deletes emails immediately
+D. Not secure
+Answer: B
+________________________________________
+27. In Python’s smtplib, which method initiates a connection to the server?
+A. connect()
+B. open()
+C. start()
+D. begin()
+Answer: A
+________________________________________
+28. FTP response code 530 indicates:
+A. File not found
+B. Login incorrect
+C. Command OK
+D. Service closing control connection
+Answer: B
+________________________________________
+29. HTTP operates primarily over which transport protocol?
+A. UDP
+B. ICMP
+C. TCP
+D. SCTP
+Answer: C
+________________________________________
+30. SMTP uses which mechanism to transfer data?
+A. Push mechanism
+B. Pull mechanism
+C. Hybrid push–pull
+D. Signal-based delivery
+Answer: A
+________________________________________
+31. POP3 uses which mechanism to retrieve mail?
+A. Push
+B. Pull
+C. Hybrid
+D. Event-driven
+Answer: B
+________________________________________
+32. IMAP allows users to:
+A. Send emails
+B. Create server-side folders
+C. Upload files to remote servers
+D. Stream audio files
+Answer: B
+________________________________________
+33. The main similarity between FTP and HTTP is:
+A. Both use two channels
+B. Both transfer files
+C. Both use TCP
+D. Both use port 21
+Answer: C
+________________________________________
+34. An SMTP 421 response code indicates:
+A. Temporary failure
+B. Authentication required
+C. Invalid recipient
+D. Message too large
+Answer: A
+________________________________________
+35. IMAP servers commonly respond with:
+A. 200 OK
+B. +OK
+C. OK / NO / BAD
+D. ACCEPT / REJECT
+Answer: C
+________________________________________
+36. Which protocol allows resuming interrupted file transfers?
+A. SMTP
+B. POP3
+C. HTTP
+D. FTP
+Answer: D
+________________________________________
+37. Python’s smtplib.SMTPServerDisconnected occurs when:
+A. Credentials are wrong
+B. Server closes the connection unexpectedly
+C. Message exceeds limits
+D. DNS lookup fails
+Answer: B
+________________________________________
+38. Which protocol supports message flags such as “Seen” or “Deleted”?
+A. POP3
+B. SMTP
+C. IMAP
+D. FTP
+Answer: C
+________________________________________
+39. An advantage of SMTP is:
+A. Allows downloading messages
+B. Provides structured folder access
+C. Efficient message submission
+D. Synchronizes across devices
+Answer: C
+________________________________________
+40. An HTTP 500 response code means:
+A. Client error
+B. Successful response
+C. Informational message
+D. Internal server error
+Answer: D
+________________________________________
+
+Section 1: Multiple Choice Questions
+1. Which module in Python is used for socket programming?
+a) network
+b) socket
+c) netlib
+d) sys
+Answer: b) socket
+2. Sockets in Python provide an interface that lets applications send and receive data using TCP/UDP. This functionality is MOST closely associated with which OSI layer?
+a) Application Layer
+b) Transport Layer
+c) Network Layer
+d) Physical Layer
+Answer: b) Transport Layer
+3. What does the following code do?
+```python
+import socket
+s = socket.socket()
+s.connect(('localhost', 8080))
+```
+a) Creates a UDP connection
+b) Creates a TCP client socket and connects to port 8080
+c) Creates a server socket
+d) Binds the socket to the local host
+Answer: b) Creates a TCP client socket and connects to port 8080
+4. Which of the following creates a UDP socket?
+```python
+socket.socket(socket.AF_INET, socket.___)
+```
+a) SOCK_STREAM
+b) SOCK_DGRAM
+c) SOCK_RAW
+d) SOCK_SEQPACKET
+Answer: b) SOCK_DGRAM
+5. What will `s.bind(('127.0.0.1', 5000))` do?
+a) Connect to the server
+b) Assign an IP and port to the socket
+c) Send data
+d) Receive data
+Answer: b) Assign an IP and port to the socket
+6. What does this code output?
+```python
+import socket
+print(socket.gethostname())
+```
+a) Prints system’s hostname
+b) Prints IP address
+c) Prints MAC address
+d) Throws an error
+Answer: a) Prints system’s hostname
+7. Which function listens for incoming connections?
+a) socket.connect()
+b) socket.listen()
+c) socket.accept()
+d) socket.recv()
+Answer: b) socket.listen()
+8. What is returned by `socket.accept()`?
+a) Only the client address
+b) Only the new socket object
+c) A tuple (new_socket, client_address)
+d) Nothing
+Answer: c) A tuple (new_socket, client_address)
+9. If a socket error occurs, which exception is typically raised in Python?
+a) IOError
+b) ValueError
+c) socket.error
+d) OSError
+Answer: c) socket.error
+10. What happens if you call `s.recv(1024)` on a blocking socket with no data yet?
+a) Returns empty string immediately
+b) Waits (blocks) until data arrives
+c) Closes the connection
+d) Throws an exception
+Answer: b) Waits (blocks) until data arrives
+11. Which of the following closes a socket correctly?
+a) s.disconnect()
+b) s.shutdown()
+c) s.close()
+d) s.exit()
+Answer: c) s.close()
+12. In socket programming, the term "binding" refers to:
+a) Associating a socket with an IP and port
+b) Encrypting data
+c) Creating a TCP handshake
+d) Sending packets
+Answer: a) Associating a socket with an IP and port
+13. Which protocol ensures reliable delivery of data?
+a) UDP
+b) TCP
+c) IP
+d) ICMP
+Answer: b) TCP
+14. Which function sends data to a connected TCP socket?
+a) s.put()
+b) s.send()
+c) s.post()
+d) s.write()
+Answer: b) s.send()
+15. What will happen if you bind twice to the same port (without special reuse options)?
+a) Works fine
+b) Raises "Address already in use" error
+c) Closes socket automatically
+d) Creates two sockets
+Answer: b) Raises "Address already in use" error
+16. Which of the following is true about UDP sockets?
+a) Connection-oriented
+b) Reliable delivery
+c) Connectionless
+d) Requires three-way handshake
+Answer: c) Connectionless
+17. To handle multiple client connections efficiently, which approach/module can be used?
+a) multiprocessing
+b) threading or select
+c) asyncio only
+d) random
+Answer: b) threading or select
+18. What does this line do?
+```python
+data = client.recv(1024).decode()
+```
+a) Receives and decodes 1 MB of data
+b) Receives up to 1024 bytes and converts from bytes to string
+c) Sends data
+d) Always throws exception
+Answer: b) Receives up to 1024 bytes and converts from bytes to string
+19. Which socket method allows switching to non-blocking mode?
+a) setblocking(False)
+b) setblock(0)
+c) async(False)
+d) nonblock()
+Answer: a) setblocking(False)
+20. Which is a correct example of a server socket setup?
+```python
+import socket
+s = socket.socket()
+s.bind(('localhost', 9999))
+s.listen(5)
+```
+a) Client socket
+b) Server socket ready to accept connections
+c) UDP connection
+d) Invalid code
+Answer: b) Server socket ready to accept connections
+====================================
+Section 2: True / False Questions
+1. Sockets work at the Application layer.
+   Answer: False
+2. `socket.SOCK_STREAM` is used for TCP connections.
+   Answer: True
+3. UDP is connection-oriented.
+   Answer: False
+4. `s.listen()` is used only in client sockets.
+   Answer: False
+5. A socket must be bound before listening for connections.
+   Answer: True
+6. TCP guarantees message delivery (reliable byte stream, ordered or error).
+   Answer: True
+7. The function `recv()` can block until data is available.
+   Answer: True
+8. `socket.AF_INET6` is used for IPv4 addressing.
+   Answer: False
+   (AF_INET6 هو IPv6.)
+9. `s.close()` releases the socket resource.
+   Answer: True
+10. `sendto()` is used only for UDP sockets.
+    Answer: False
+11. The `connect()` function can be used in server sockets.
+    Answer: False
+12. UDP sockets use `listen()` before `recv()`.
+    Answer: False
+13. The `socket` module is part of Python’s standard library.
+    Answer: True
+14. A client can connect to multiple servers simultaneously using threads.
+    Answer: True
+15. TCP ensures packet (byte stream) ordering.
+    Answer: True
+16. In Python, `socket.timeout` is an exception class.
+    Answer: True
+17. A single socket can bind to multiple ports simultaneously.
+    Answer: False
+18. The default buffer size in `recv()` is 1024 bytes if unspecified.
+    Answer: False
+19. `socket.getaddrinfo()` is used to translate hostnames into addresses.
+    Answer: True
+20. Sockets are used only for LAN communication.
+    Answer: False
+Section 3: Matching Questions) 
+Section 3: Matching Questions
+Column A (Term / Function)	Column B (Description)
+1. socket.socket()	b. Creates a new socket object
+2. bind()	c. Assigns an IP address and port number to the socket
+3. listen()	h. Puts the server socket into passive mode, waiting for client connections
+4. accept()	a. Accepts an incoming client connection and returns a new socket plus the client address
+5. send()	d. Sends data through a connected socket
+6. recv()	e. Receives incoming data from the socket
+7. gethostbyname()	f. Resolves a hostname (e.g. "example.com") to an IP address
+8. close()	g. Releases the socket resource / closes the connection
+9. TCP	i. Connection-oriented, reliable transport protocol
+10. UDP	j. Connectionless transport protocol (no handshake)
+Answer
+1→b
+2→c
+3→h
+4→a
+5→d
+6→e
+7→f
+8→g
+9→i
+10→j
+Section 4: Find the Error
+1. Code:
+```python
+s = socket.socket
+```
+Error: Missing parentheses.
+Fix:
+```python
+s = socket.socket()
+```
+2. Code:
+```python
+s.listen()
+s.bind(('localhost', 8080))
+```
+Error: Must bind before listen.
+Fix:
+```python
+s.bind(('localhost', 8080))
+s.listen(5)
+```
+3. Code:
+```python
+client.send('Hello')
+```
+Error: Must send bytes, not str.
+Fix:
+```python
+client.send(b'Hello')
+```
+4. Code:
+```python
+data = s.recv()
+```
+Error: recv() requires a buffer size.
+Fix:
+```python
+data = s.recv(1024)
+```
+5. Code:
+```python
+s.connect('localhost', 8080)
+```
+Error: connect() needs a tuple (host, port).
+Fix:
+```python
+s.connect(('localhost', 8080))
+```
+6. Code:
+```python
+socket.bind(('127.0.0.1', 9000))
+```
+Error: bind() must be called on the socket instance, not the module.
+Fix:
+```python
+s = socket.socket()
+s.bind(('127.0.0.1', 9000))
+```
+7. Code:
+```python
+s = socket.socket()
+s.accept()
+```
+Error: You must call listen() first on a server socket before accept().
+Fix:
+```python
+s.listen(5)
+conn, addr = s.accept()
+```
+8. Code:
+```python
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.send(b'data')
+```
+Error: Cannot send before the socket is connected (client) or before accept() returns a connected socket (server).
+Fix (client example):
+```python
+s.connect(('localhost', 8080))
+s.send(b'data')
+```
+9. Code:
+```python
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+s.listen(5)
+```
+Error: UDP sockets do not use listen().
+Fix: use UDP-style send/receive, e.g.:
+```python
+s.sendto(b'data', ('localhost', 8080))
+data, addr = s.recvfrom(1024)
+```
+10. Code:
+```python
+s.bind(('localhost', '8080'))
+```
+Error: Port must be an integer, not a string.
+Fix:
+```python
+s.bind(('localhost', 8080))
+```
+
+
+
+🧠 SSL / TLS in Python Network Programming – 20 MCQs
+________________________________________
+1.
+Which Python module provides a high-level interface for creating secure (SSL/TLS) network connections?
+A) socket
+B) ssl ✅
+C) cryptography
+D) hashlib
+________________________________________
+2.
+What does SSL stand for?
+A) Secure Socket Layer ✅
+B) System Security Layer
+C) Secure Stream Level
+D) Socket Security Layer
+________________________________________
+3.
+Which function wraps an existing socket with SSL in Python?
+A) ssl.wrap_socket() ✅
+B) ssl.encrypt_socket()
+C) socket.wrap_ssl()
+D) ssl.SSLContext()
+________________________________________
+4.
+What is the purpose of SSLContext in Python’s ssl module?
+A) To store socket data
+B) To manage SSL settings and certificates ✅
+C) To handle TCP connections only
+D) To generate session cookies
+________________________________________
+5.
+Which version of TLS is considered most secure as of Python 3.11?
+A) TLSv1.0
+B) TLSv1.1
+C) TLSv1.2
+D) TLSv1.3 ✅
+________________________________________
+6.
+What does the parameter cert_reqs=ssl.CERT_REQUIRED enforce in a Python SSL connection?
+A) The client must present a certificate ✅
+B) The server ignores invalid certificates
+C) The SSL handshake is optional
+D) Encryption is disabled
+________________________________________
+7.
+Which of the following exceptions is raised when SSL handshake fails?
+A) ssl.SSLError ✅
+B) socket.error
+C) ConnectionError
+D) OSError
+________________________________________
+8.
+In Python, which function is used to create an SSL context that verifies server certificates automatically?
+A) ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT) ✅
+B) ssl.wrap_socket()
+C) ssl.create_insecure_context()
+D) ssl.SSLClient()
+________________________________________
+9.
+Which of the following correctly verifies a certificate hostname?
+A) ssl.match_hostname(cert, hostname) ✅
+B) ssl.check_cert(cert, hostname)
+C) ssl.verify(cert)
+D) ssl.hostname_check()
+________________________________________
+10.
+When using HTTPS with Python’s urllib, SSL is handled by:
+A) The ssl module
+B) The underlying http.client using ssl ✅
+C) The socket module directly
+D) Manual encryption
+________________________________________
+11.
+What method is used to wrap a server socket with SSL in Python 3?
+A) ssl.wrap_socket(sock, server_side=True) ✅
+B) ssl.bind_server(sock)
+C) ssl.wrap_server()
+D) socket.ssl_enable()
+________________________________________
+12.
+What happens if you connect to a TLS server using a plain (non-SSL) socket?
+A) The connection succeeds but unencrypted
+B) The handshake fails and raises an exception ✅
+C) The connection automatically upgrades
+D) Nothing, it just prints a warning
+________________________________________
+13.
+Which attribute of an SSL socket gives access to the server’s certificate?
+A) getpeercert() ✅
+B) getpeername()
+C) peerinfo()
+D) getcertinfo()
+________________________________________
+14.
+Which Python statement is best for creating a secure client socket?
+context = ssl.create_default_context()
+conn = context.wrap_socket(socket.socket(), server_hostname='example.com')
+A) Correct ✅
+B) Incorrect – missing bind()
+C) Incorrect – should use SSLContext() directly
+D) Incorrect – server_hostname is invalid
+________________________________________
+15.
+Which protocol constant enables automatic negotiation of the best available TLS version?
+A) ssl.PROTOCOL_TLS ✅
+B) ssl.PROTOCOL_SSLv3
+C) ssl.PROTOCOL_TLSv1_2
+D) ssl.PROTOCOL_NEGOTIATE
+________________________________________
+16.
+What is the main difference between SSL and TLS?
+A) TLS is the newer, more secure successor of SSL ✅
+B) SSL is newer than TLS
+C) They are identical
+D) TLS is slower than SSL
+________________________________________
+17.
+Which option disables SSL certificate verification in an SSL context (not recommended)?
+A) context.check_hostname = False and context.verify_mode = ssl.CERT_NONE ✅
+B) context.disable_security()
+C) context.cert_reqs = False
+D) context.mode = "insecure"
+________________________________________
+18.
+Which Python library is often used for HTTPS client communication with SSL/TLS support by default?
+A) requests ✅
+B) urllib.parse
+C) socket
+D) hashlib
+________________________________________
+19.
+Which of the following is true about the SSL handshake process?
+A) It encrypts the connection before authentication
+B) It authenticates and negotiates encryption parameters ✅
+C) It only exchanges keys
+D) It is optional in TLS
+________________________________________
+20.
+Which statement best describes the role of certificates in TLS communication?
+A) They encrypt data directly
+B) They authenticate the identity of the communicating parties ✅
+C) They speed up the handshake
+D) They store session data
+________________________________________
+

@@ -1,0 +1,521 @@
+Python Socket Programming – Exceptions Quiz
+(with Answers)
+1. When using Python sockets, which exception is raised if a connection attempt is
+refused by the target host?
+• socket.error
+• ConnectionRefusedError  (Correct Answer)
+• TimeoutError
+2. What will happen if an exception is not caught inside an async function used in
+asyncio networking?
+• The event loop stops immediately
+• The task is cancelled and an error is logged 
+• The exception is silently ignored
+ (Correct Answer)
+3. Which exception indicates that a socket was forcibly closed by the remote host?
+• BrokenPipeError
+• ConnectionAbortedError  (Correct Answer)
+• socket.timeout
+4. What is the most appropriate block to release a socket resource even if an
+exception occurs?
+• try / except
+• try / finally 
+• try / else
+ (Correct Answer)
+5. Which built-in Python exception is raised when reading from a closed socket?
+• ConnectionResetError
+• OSError: [Errno 9] Bad file descriptor 
+• socket.timeout
+ (Correct Answer)
+6. In socket.connect(), if the host is unreachable, Python raises:
+• ConnectionRefusedError
+• OSError: [Errno 113] No route to host 
+• ConnectionResetError
+ (Correct Answer)
+7. Which statement correctly handles both connection and timeout errors in one
+block?
+• except (ConnectionError, TimeoutError):  (Correct Answer)
+• except socket:
+• except socket.error or TimeoutError:
+8. When using socket.settimeout(5), a read operation exceeding this time raises:
+• OSError
+• socket.timeout 
+ (Correct Answer)
+• ConnectionResetError
+9. Which Python module defines the base class for many network-related
+exceptions?
+• sys
+• socket 
+• asyncio
+ (Correct Answer)
+10. What happens if an exception occurs inside an async with block managing a
+network stream?
+• The connection remains open
+• The context manager ensures closure  (Correct Answer)
+• The program crashes
+11. In Python 3, which class hierarchy includes most connection-related
+exceptions?
+• IOError → OSError → ConnectionError  (Correct Answer)
+• Exception → RuntimeError → socket.error
+• SystemError → ConnectionError
+12. To ensure the socket is closed safely after use, which structure is best
+practice?
+• with socket.socket(...) as s: 
+• try: ... except: ...
+• close() before return
+ (Correct Answer)
+13. When using multithreaded sockets, how should exceptions be handled?
+• Use one global try/except in main thread
+• Wrap each thread’s connection logic in its own try/except 
+• Ignore exceptions and continue
+ (Correct Answer)
+14. If the client disconnects unexpectedly, what exception might the server raise
+while sending data?
+• BrokenPipeError  (Correct Answer)
+• socket.timeout
+• TimeoutError
+15. When an invalid IP address is passed to socket.connect(), which error is
+raised?
+• ConnectionRefusedError
+• socket.gaierror 
+• ValueError
+ (Correct Answer)
+16. What is the effect of `raise` with no arguments inside an `except` block?
+• Raises a new custom exception
+• Re-raises the last caught exception 
+• Does nothing
+ (Correct Answer)
+17. How to catch all possible network exceptions safely?
+• except Exception: 
+• except socket.error:
+ (Correct Answer)
+• except BaseException:
+18. What exception is raised when binding a socket to an already-used port?
+• OSError: [Errno 98] Address already in use 
+• socket.timeout
+• ConnectionAbortedError
+ (Correct Answer)
+19. When recv() returns an empty bytes object (b''), it means:
+• Timeout occurred
+• Connection was closed by the peer  (Correct Answer)
+• Packet lost
+20. In asynchronous networking, how should exceptions be propagated from
+coroutines?
+• Return error strings
+• Use raise inside async function 
+• Ignore exceptions
+ (Correct Answer)
+21. Which exception type indicates DNS resolution failed?
+• ConnectionRefusedError
+• socket.gaierror 
+• socket.timeout
+ (Correct Answer)
+22. What does this code do if an exception occurs? try { s.connect(addr) } catch (e)
+{ raise RuntimeError('Network failed') from e }
+• Suppresses the original error
+• Chains the original exception 
+• Ignores traceback
+ (Correct Answer)
+23. Why is `finally` important in socket programming?
+• It only runs if there’s no exception
+• It ensures resource cleanup always  (Correct Answer)
+• It hides all exceptions
+24. When handling asyncio exceptions, which method cancels a failing task?
+• task.abort()
+• task.cancel() 
+• task.close()
+ (Correct Answer)
+25. Is this timeout handler correct? try: data = s.recv(1024) except socket.timeout:
+print('Timeout occurred')
+• Correct 
+ (Correct Answer)
+• Incorrect – must use TimeoutError
+• Incorrect – must close socket first
+26. What exception occurs if you try to send data over a socket that is not
+connected?
+• socket.error: [Errno 107] Transport endpoint is not connected 
+• BrokenPipeError
+• TimeoutError
+ (Correct Answer)
+27. Which keyword allows you to execute code only if NO exception was raised in
+try?
+• else 
+• finally
+• raise
+ (Correct Answer)
+28. What happens if you `except socket.error as e:` but the actual exception is
+TimeoutError?
+• It will still catch it (TimeoutError is a subclass of OSError/IOError from socket ops) 
+(Correct Answer)
+• It won’t catch it
+• It raises a new exception automatically
+29. Which exception is raised when the server forcibly closes a TCP connection?
+• ConnectionResetError  (Correct Answer)
+• socket.timeout
+• BrokenPipeError
+30. Does this code guarantee graceful socket closure even if an exception
+happens? try: s = socket.socket(); s.connect(addr); s.send(b'Hello') finally:
+s.close()
+• Yes, correct 
+ (Correct Answer)
+• No, should use except
+• No, should not close in finally
+
+
+TCP/UDP Networking Quiz
+Python Socket Programming - 36 Questions
+Question 1
+What does TCP stand for in computer networking?
+Transfer Control Protocol
+✓
+ Transmission Control Protocol
+Total Control Protocol
+Transport Central Protocol
+Correct Answer:
+Transmission Control Protocol
+Question 2
+Which Python module is primarily used for socket-level network
+programming (TCP/UDP)?
+os
+✓
+ socket
+requests
+http
+Correct Answer:
+socket
+Question 3
+Which Python call correctly creates a TCP socket?
+socket.tcp()
+socket.create()
+✓
+ socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+Correct Answer:
+socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+Question 4
+Which method is used by a TCP client socket to initiate a connection to a
+remote server?
+bind()
+✓
+ connect()
+listen()
+accept()
+Correct Answer:
+connect()
+Question 5
+In a TCP server, what is the purpose of the bind() method?
+To close the socket
+To receive data
+✓
+ To associate the server socket with a local IP address and port
+To establish an outgoing connection
+Correct Answer:
+To associate the server socket with a local IP address and port
+Question 6
+Which method on a TCP server socket tells the OS that the server is ready
+to accept incoming connection requests (and sets the backlog queue size)?
+recv()
+send()
+✓
+ listen()
+shutdown()
+Correct Answer:
+listen()
+Question 7
+Which method is called on a listening TCP server socket to obtain a new
+socket connected to a specific client?
+✓
+ accept()
+connect()
+attach()
+handshake()
+Correct Answer:
+accept()
+Question 8
+Which method is used by a connected TCP socket to send data to the peer?
+write_data()
+✓
+ send()
+transmit()
+forward()
+Correct Answer:
+send()
+Question 9
+Which method is used by a connected TCP socket to receive incoming data
+bytes?
+read()
+input()
+✓
+ recv()
+pull()
+Correct Answer:
+recv()
+Question 10
+What does recv(1024) mean in Python socket programming?
+Sets timeout to 1024 ms
+Guarantees 1024 bytes returned
+✓
+ Specifies the maximum number of bytes to read from the socket in this call
+Encodes data as UTF-1024
+Correct Answer:
+Specifies the maximum number of bytes to read from the socket in this call
+Question 11
+In normal (blocking) mode, what happens if a TCP server calls accept()
+and no client is currently trying to connect?
+Raises an exception
+Returns (None, None)
+The program exits
+✓
+ accept() blocks (waits) until a client connects
+Correct Answer:
+accept() blocks (waits) until a client connects
+Question 12
+Which statement best describes TCP communication?
+Unreliable and unordered
+Connectionless
+✓
+ Guarantees reliable, ordered, error-checked delivery of data
+Mainly used for broadcasting
+Correct Answer:
+TCP guarantees reliable, ordered, error-checked delivery of data
+Question 13
+Which method is used to close a socket (TCP or UDP) in Python once you
+are done with it?
+stop()
+shutdown()
+✓
+ close()
+terminate()
+Correct Answer:
+close()
+Question 14
+What is the purpose of the shutdown() method on a TCP socket?
+Destroys the socket object
+Restarts the TCP session
+✓
+ Disables further sending and/or receiving on the socket (half-close), without
+fully closing the socket
+Broadcasts a disconnect message
+Correct Answer:
+It disables further sending and/or receiving on the socket (half-close), without
+fully closing the socket
+Question 15
+Which of the following statements about UDP is correct?
+Connection-oriented
+✓
+ Connectionless and does not guarantee delivery
+Guarantees in-order, reliable transfer
+Automatically retransmits lost packets
+Correct Answer:
+UDP is connectionless and does not guarantee delivery
+Question 16
+Which Python call correctly creates a UDP socket?
+✓
+ socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+socket.socket(socket.AF_UDP, socket.SOCK_DGRAM)
+socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+socket.create_udp()
+Correct Answer:
+socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+Question 17
+Which method is typically used to send data with a UDP socket in Python?
+send()
+✓
+ sendto()
+post()
+push()
+Correct Answer:
+sendto()
+Question 18
+Which method is typically used to receive data (and the sender's address)
+from a UDP socket in Python?
+recv()
+✓
+ recvfrom() is generally preferred for UDP because it returns both data and
+sender address
+UDP does not support reading data
+Correct Answer:
+recvfrom() is generally preferred for UDP because it returns both data and sender
+address
+Question 35
+Why does TCP not support broadcasting to multiple hosts in one call the
+same way UDP can?
+TCP always encrypts data
+TCP is unidirectional
+✓
+ TCP is a point-to-point, connection-oriented stream between exactly two
+endpoints
+TCP packets cannot carry IP headers
+Correct Answer:
+Because TCP is a point-to-point, connection-oriented stream between exactly two
+endpoints
+Question 36
+Which statement about reliability is correct?
+✓
+ TCP performs retransmission and ordering; UDP does not
+UDP performs retransmission and ordering; TCP does not
+Both TCP and UDP retransmit automatically
+Neither TCP nor UDP retransmits
+Correct Answer:
+TCP performs retransmission and ordering; UDP does not
+TCP/UDP Networking Quiz - Python Socket Programming
+36 Questions with Correct Answers Highlighted
+accept()
+Correct Answer:
+recvfrom()
+Question 19
+What does it mean if recvfrom() on a UDP socket returns (data, addr)?
+Switched to TCP mode
+Server accepted a connection
+✓
+ You received a datagram 'data' from the remote sender identified by 'addr'
+Socket timed out
+Correct Answer:
+You received a datagram 'data' from the remote sender identified by 'addr'
+Question 20
+Why can we call bind() on a UDP socket?
+To force UDP to become connection-oriented
+✓
+ To associate the UDP socket with a specific local IP and port so it can receive
+datagrams
+To guarantee reliable delivery
+To negotiate a TLS session
+Correct Answer:
+To associate the UDP socket with a specific local IP and port so it can receive
+datagrams
+Question 21
+Why is UDP often preferred for real-time streaming (voice, video, gaming
+telemetry)?
+Guarantees no packet loss
+Forces packets to arrive in order
+✓
+ Avoids connection setup and retransmission delays, leading to lower latency
+Encrypts all packets by default
+Correct Answer:
+Because UDP avoids connection setup and retransmission delays, leading to lower
+latency
+Question 22
+What is the effect of the lack of acknowledgments (ACKs) and
+retransmission in UDP?
+Improves reliability
+Makes the protocol slower
+✓
+ Reduces latency but means delivery is not guaranteed
+Prevents packet loss completely
+Correct Answer:
+It reduces latency but means delivery is not guaranteed
+Question 23
+Which socket option is commonly set with setsockopt() to allow reusing a
+recently used local address/port?
+SO_BROADCAST
+✓
+ SO_REUSEADDR
+SO_PRIVATE
+SO_PROTECT
+Correct Answer:
+SO_REUSEADDR
+Question 24
+Which socket option is typically enabled to allow sending broadcast
+packets over UDP?
+SO_CONNECT
+✓
+ SO_BROADCAST
+SO_LISTEN
+SO_TCPMODE
+Correct Answer:
+SO_BROADCAST
+Question 25
+Which call is commonly used to set the multicast Time-To-Live (TTL) for
+IPv4 multicast traffic in Python?
+socket.enable_multicast(ttl)
+✓
+ socket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl)
+socket.set_multicast_ttl(ttl)
+socket.multicast(ttl)
+Correct Answer:
+socket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl)
+Question 26
+What does socket.settimeout(5) do on a socket in Python?
+Closes the socket after 5 seconds
+Makes future operations non-blocking
+✓
+ Causes socket operations like recv()/recvfrom() to raise socket.timeout if they
+block longer than 5 seconds
+Encrypts the socket for 5 seconds
+Correct Answer:
+It causes socket operations like recv()/recvfrom() to raise socket.timeout if they
+block longer than 5 seconds
+Question 27
+Which exception should you typically catch if a socket operation
+(send/recv) fails due to a general network error?
+IndexError
+✓
+ socket.error (alias of OSError in Python 3)
+NameError
+UnicodeError
+Correct Answer:
+socket.error (alias of OSError in Python 3)
+Question 28
+Which specific exception is commonly raised if DNS name resolution
+fails, for example when the hostname cannot be resolved?
+✓
+ socket.gaierror
+socket.timeout
+ConnectionRefusedError
+ValueError
+Correct Answer:
+socket.gaierror
+Question 29
+What does it usually mean if recv() on a TCP socket returns an empty
+bytes object b''?
+✓
+ The peer has closed the connection gracefully
+Data corruption occurred
+The socket is now UDP-only
+The network card is offline
+Correct Answer:
+The peer has closed the connection gracefully
+Question 30
+Why must you send bytes (e.g. b"Hello") rather than a plain string when
+using send() in Python sockets?
+TCP only supports ASCII
+✓
+ socket.send() transmits raw bytes objects, not Python str objects
+Unicode is illegal on the network
+recv() only returns strings
+Correct Answer:
+Because socket.send() transmits raw bytes objects, not Python str objects
+Question 31
+Which of the following best describes the normal server-side lifecycle for
+a basic TCP server in Python?
+connect() → listen() → sendto()
+✓
+ bind() → listen() → accept() → recv()/send()
+bind() → sendto() → recvfrom()
+connect() → recvfrom() → close()
+Correct Answer:
+bind() → listen() → accept() → recv()/send()
+Question 32
+Which of the following best describes the normal server-side lifecycle for
+a basic UDP "server" in Python?
+✓
+ bind() → recvfrom() → sendto()
+listen() → accept() → recv()
+connect() → listen() → shutdown()
+handshake() → ack() → stream()
+Correct Answer:
+bind() → recvfrom() → sendto()
+Question 33
+What does socket.gethostname() return on most systems?
+The remote peer's hostname
+✓
+ The local machine's hostname
+The public IP address of the router
+The current DNS server name
+Correct Answer:
+The local machine's hostname
+Question 34
+Which statement about using recv() on a UDP socket is most accurate?
+recv() is always correct
+Cannot receive UDP in Python
+✓
+ recvfrom()
